@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Wivuu.ManualMapper.Tests
@@ -24,7 +25,9 @@ namespace Wivuu.ManualMapper.Tests
         public void TestBasicMapping()
         {
             var x = 5;
-            Mapper.Instance.CreateMap<TestSourceType, TestDestType>()
+
+            var mapper = new Mapper();
+            mapper.CreateMap<TestSourceType, TestDestType>()
                 .ForMember(d => d.MyName, s => s.Name + x.ToString())
                 .ForMember(d => d.MyValue, s => s.Value)
                 // Date -> MyDate intentionally not mapped
@@ -37,7 +40,7 @@ namespace Wivuu.ManualMapper.Tests
                 Date  = DateTime.Now
             };
 
-            var destNew = Mapper.Instance.Map<TestDestType>(source);
+            var destNew = mapper.Map<TestDestType>(source);
 
             // Assert that mapping worked
             Assert.IsNotNull(destNew);
@@ -54,7 +57,7 @@ namespace Wivuu.ManualMapper.Tests
                 MyDate  = timeChosen
             };
 
-            Mapper.Instance.Map(source, destExisting);
+            mapper.Map(source, destExisting);
 
             // Assert that mapping worked
             Assert.IsNotNull(destExisting);
@@ -63,6 +66,31 @@ namespace Wivuu.ManualMapper.Tests
             Assert.AreEqual(source.Value, destExisting.MyValue);
             Assert.AreNotEqual(source.Date, destExisting.MyDate);
             Assert.AreEqual(timeChosen, destExisting.MyDate);
+        }
+
+        [TestMethod]
+        public void TestQueryableMapping()
+        {
+            var mapper = new Mapper();
+            mapper.CreateMap<TestSourceType, TestDestType>()
+                .ForMember(d => d.MyName, s => s.Name)
+                .ForMember(d => d.MyValue, s => s.Value)
+                // Date -> MyDate intentionally not mapped
+                .Compile();
+
+            var source = (
+                from i in Enumerable.Range(0, 100)
+                select new TestSourceType
+                {
+                    Date  = DateTime.Today.AddMinutes(i),
+                    Name  = $"Item {i}",
+                    Value = i
+                }
+            )
+            .AsQueryable()
+            .ProjectTo<TestDestType>();
+
+
         }
     }
 }

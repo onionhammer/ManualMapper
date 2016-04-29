@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Wivuu.ManualMapper
 {
@@ -42,6 +44,27 @@ namespace Wivuu.ManualMapper
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
             expr.CopyParametersFunc(source, dest);
             return dest;
+        }
+    }
+
+    public static class MapperExtensions
+    {
+        /// <summary>
+        /// Project query with projection
+        /// </summary>
+        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source) =>
+            ProjectTo<TDest>(source, Mapper.Instance);
+
+        /// <summary>
+        /// Project query with projection
+        /// </summary>
+        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source, Mapper map)
+        {
+            var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
+            var exprNew = expr.CopyParametersExpr as Expression<Func<object, TDest>>;
+
+            throw new NotImplementedException();
+            //return source.Select(exprNew);
         }
     }
 }
