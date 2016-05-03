@@ -49,8 +49,8 @@ namespace Wivuu.ManualMapper
         /// </summary>
         public void Compile()
         {
-            Expr.CopyParametersExpr = BuildQueryFunc();
-            Expr.CopyParametersFunc = BuildAction();
+            Expr.CopyParametersExpr   = BuildExpr();
+            Expr.CopyParametersAction = BuildAction();
         }
 
         private void AddProperties(List<Expression> body, MemberReplaceVisitor visitor, Expression dest) =>
@@ -64,16 +64,21 @@ namespace Wivuu.ManualMapper
                 })
             );
 
-        private Expression<Func<TSource, TDest>> BuildQueryFunc()
+        private Expression<Func<object, TDest>> BuildExpr()
         {
             using (var scope = new Scope())
             {
+                var srcObj  = scope.Param<object>("srcObj");
                 var dest    = scope.Var<TDest>("dest");
-                var src     = scope.Param<TSource>("src");
+                var src     = scope.Var<TSource>("src");
                 var visitor = new MemberReplaceVisitor(src);
 
-                var body = new List<Expression>(capacity: 2 + Mappings.Count)
+                var body = new List<Expression>(capacity: 3 + Mappings.Count)
                 {
+                    Expression.Assign(
+                        src,
+                        Expression.Convert(srcObj, typeof(TSource))
+                    ),
                     Expression.Assign(
                         dest, Expression.New(typeof(TDest))
                     )
@@ -84,8 +89,8 @@ namespace Wivuu.ManualMapper
                 body.Add(dest);
 
                 // Add each mapping to the lambda
-                var expr = Lambda<Func<TSource, TDest>>(
-                    param: new[] { src },
+                var expr = Lambda<Func<object, TDest>>(
+                    param: new[] { srcObj },
                     body: scope.Block(body)
                 );
 
@@ -129,7 +134,7 @@ namespace Wivuu.ManualMapper
 
     internal sealed class MapExpression<TDest> : MapExpression
     {
-        public Action<object, TDest> CopyParametersFunc;
+        public Action<object, TDest> CopyParametersAction;
         public Expression CopyParametersExpr;
     }
 }

@@ -31,7 +31,7 @@ namespace Wivuu.ManualMapper
         {
             var dest = new TDest();
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
-            expr.CopyParametersFunc(source, dest);
+            expr.CopyParametersAction(source, dest);
             return dest;
         }
 
@@ -42,7 +42,7 @@ namespace Wivuu.ManualMapper
             where TDest : class, new()
         {
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
-            expr.CopyParametersFunc(source, dest);
+            expr.CopyParametersAction(source, dest);
             return dest;
         }
     }
@@ -63,8 +63,8 @@ namespace Wivuu.ManualMapper
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprNew = expr.CopyParametersExpr as Expression<Func<object, TDest>>;
 
-            throw new NotImplementedException();
-            //return source.Select(exprNew);
+            //throw new NotImplementedException();
+            return source.Cast<object>().Select(exprNew);
         }
     }
 }

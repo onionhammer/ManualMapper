@@ -82,15 +82,28 @@ namespace Wivuu.ManualMapper.Tests
                 from i in Enumerable.Range(0, 100)
                 select new TestSourceType
                 {
-                    Date  = DateTime.Today.AddMinutes(i),
-                    Name  = $"Item {i}",
+                    Date = DateTime.Today.AddMinutes(i),
+                    Name = $"Item {i}",
                     Value = i
                 }
-            )
-            .AsQueryable()
-            .ProjectTo<TestDestType>();
+            ).ToList();
 
+            var dest = source
+                .AsQueryable()
+                .ProjectTo<TestDestType>(mapper)
+                .ToList();
 
+            Assert.AreEqual(source.Count, dest.Count);
+            Enumerable
+                .Zip(source, dest, (x, y) => Tuple.Create(x, y))
+                .All(t =>
+                {
+                    Assert.AreEqual(t.Item1.Name, t.Item2.MyName);
+                    Assert.AreEqual(t.Item1.Value, t.Item2.MyValue);
+                    Assert.AreNotEqual(t.Item1.Date, t.Item2.MyDate);
+
+                    return true;
+                });
         }
     }
 }
