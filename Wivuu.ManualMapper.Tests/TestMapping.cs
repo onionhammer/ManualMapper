@@ -89,7 +89,7 @@ namespace Wivuu.ManualMapper.Tests
             ).ToList();
 
             var dest = source
-                .AsQueryable()
+                //.AsQueryable()
                 .ProjectTo<TestDestType>(mapper)
                 .ToList();
 

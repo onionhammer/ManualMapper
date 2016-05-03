@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -52,6 +53,31 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project query with projection
         /// </summary>
+        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source)
+            where TDest : class, new() =>
+            ProjectTo<TDest>(source, Mapper.Instance);
+
+        /// <summary>
+        /// Project query with projection
+        /// </summary>
+        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source, Mapper map)
+            where TDest : class, new()
+        {
+            var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
+            var exprMap = expr.CopyParametersAction;
+
+            var xx = source.Cast<object>();
+            return xx.Select(s =>
+            {
+                var d = new TDest();
+                exprMap(s, d);
+                return d;
+            });
+        }
+
+        /// <summary>
+        /// Project query with projection
+        /// </summary>
         public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source) =>
             ProjectTo<TDest>(source, Mapper.Instance);
 
@@ -61,10 +87,9 @@ namespace Wivuu.ManualMapper
         public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source, Mapper map)
         {
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
-            var exprNew = expr.CopyParametersExpr as Expression<Func<object, TDest>>;
+            var exprMap = expr.CopyParametersExpr as Expression<Func<object, TDest>>;
 
-            //throw new NotImplementedException();
-            return source.Cast<object>().Select(exprNew);
+            return source.Cast<object>().Select(exprMap);
         }
     }
 }
