@@ -51,14 +51,14 @@ namespace Wivuu.ManualMapper
     public static class MapperExtensions
     {
         /// <summary>
-        /// Project query with projection
+        /// Project enumerable with projection
         /// </summary>
         public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source)
             where TDest : class, new() =>
             ProjectTo<TDest>(source, Mapper.Instance);
 
         /// <summary>
-        /// Project query with projection
+        /// Project enumerable with projection
         /// </summary>
         public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source, Mapper map)
             where TDest : class, new()
