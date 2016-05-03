@@ -10,7 +10,7 @@ namespace Wivuu.ManualMapper
         public static Scope Scope() => new Scope();
 
         public static Expression<T> Lambda<T>(
-            ParameterExpression[] param, BlockExpression body)
+            ParameterExpression[] param, Expression body)
             => Expression.Lambda<T>(body, param);
 
         public static BlockExpression Block(this Scope scope, params Expression[] expressions)
@@ -21,6 +21,9 @@ namespace Wivuu.ManualMapper
 
         public static BlockExpression Block(params Expression[] expressions)
             => Expression.Block(expressions);
+
+        public static MemberInitExpression MemberInit(this Scope scope, NewExpression newExpr, IEnumerable<MemberBinding> bindings)
+            => Expression.MemberInit(newExpr, bindings);
 
         public static MethodCallExpression Invoke(this Expression self, MethodInfo method, params Expression[] arguments)
             => Expression.Call(self, method, arguments);

@@ -78,18 +78,18 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project query with projection
         /// </summary>
-        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source) =>
-            ProjectTo<TDest>(source, Mapper.Instance);
+        public static IQueryable<TDest> ProjectTo<TDest, TEntity>(this IQueryable<TEntity> source) =>
+            ProjectTo<TDest, TEntity>(source, Mapper.Instance);
 
         /// <summary>
         /// Project query with projection
         /// </summary>
-        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source, Mapper map)
+        public static IQueryable<TDest> ProjectTo<TDest, TEntity>(this IQueryable<TEntity> source, Mapper map)
         {
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
-            var exprMap = expr.CopyParametersExpr as Expression<Func<object, TDest>>;
+            var exprMap = expr.CopyParametersExpr as Expression<Func<TEntity, TDest>>;
 
-            return source.Cast<object>().Select(exprMap);
+            return source.Select(exprMap);
         }
     }
 }

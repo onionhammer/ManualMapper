@@ -53,49 +53,25 @@ namespace Wivuu.ManualMapper
             Expr.CopyParametersAction = BuildAction();
         }
 
-        private void AddProperties(List<Expression> body, MemberReplaceVisitor visitor, Expression dest) =>
-            body.AddRange(
-                Mappings.Select(map =>
-                {
-                    var srcExpr  = visitor.Visit(map.Item1) as LambdaExpression;
-                    var destExpr = map.Item2.Update(dest);
-
-                    return Expression.Assign(destExpr, srcExpr.Body);
-                })
-            );
-
-        private Expression<Func<object, TDest>> BuildExpr()
+        private Expression<Func<TSource, TDest>> BuildExpr()
         {
             using (var scope = new Scope())
             {
-                var srcObj  = scope.Param<object>("srcObj");
-                var dest    = scope.Var<TDest>("dest");
-                var src     = scope.Var<TSource>("src");
+                var src     = scope.Param<TSource>("src");
                 var visitor = new MemberReplaceVisitor(src);
 
-                var body = new List<Expression>(capacity: 3 + Mappings.Count)
-                {
-                    Expression.Assign(
-                        src,
-                        Expression.Convert(srcObj, typeof(TSource))
-                    ),
-                    Expression.Assign(
-                        dest, Expression.New(typeof(TDest))
-                    )
-                };
-
-                AddProperties(body, visitor, dest);
-
-                body.Add(dest);
-
-                // Add each mapping to the lambda
-                var expr = Lambda<Func<object, TDest>>(
-                    param: new[] { srcObj },
-                    body:  scope.Block(body)
-                );
-
                 // Build member expression
-                return expr;
+                return Lambda<Func<TSource, TDest>>(
+                    param: new[] { src },
+                    body: scope.MemberInit(
+                        newExpr:  Expression.New(typeof(TDest)),
+                        bindings: from map in Mappings
+                                  select Expression.Bind(
+                                      map.Item2.Member,
+                                      visitor.Visit(map.Item1.Body)
+                                  )
+                    )
+                );
             }
         }
 
@@ -112,20 +88,26 @@ namespace Wivuu.ManualMapper
                 {
                     Expression.Assign(
                         src, 
-                        Expression.Convert(srcObj, typeof(TSource))
+                        Expression.TypeAs(srcObj, typeof(TSource))
                     )
                 };
 
                 // Add each mapping to the lambda
-                AddProperties(body, visitor, dest);
+                body.AddRange(
+                    Mappings.Select(map =>
+                    {
+                        var srcExpr  = visitor.Visit(map.Item1.Body);
+                        var destExpr = map.Item2.Update(dest);
 
-                var expr = Lambda<Action<object, TDest>>(
-                    param: new[] { srcObj, dest },
-                    body:  scope.Block(body)
+                        return Expression.Assign(destExpr, srcExpr);
+                    })
                 );
 
                 // Build member expression
-                return expr.Compile();
+                return Lambda<Action<object, TDest>>(
+                    param: new[] { srcObj, dest },
+                    body:  scope.Block(body)
+                ).Compile();
             }
         }
     }
