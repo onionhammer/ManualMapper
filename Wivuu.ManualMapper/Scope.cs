@@ -35,6 +35,7 @@ namespace Wivuu.ManualMapper
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
     }
 

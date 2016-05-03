@@ -91,7 +91,7 @@ namespace Wivuu.ManualMapper
                 // Add each mapping to the lambda
                 var expr = Lambda<Func<object, TDest>>(
                     param: new[] { srcObj },
-                    body: scope.Block(body)
+                    body:  scope.Block(body)
                 );
 
                 // Build member expression
@@ -122,7 +122,7 @@ namespace Wivuu.ManualMapper
                 var expr = Lambda<Action<object, TDest>>(
                     param: new[] { srcObj, dest },
                     body:  scope.Block(body)
-                ) as Expression<Action<object, TDest>>;
+                );
 
                 // Build member expression
                 return expr.Compile();
