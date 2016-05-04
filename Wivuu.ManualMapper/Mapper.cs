@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -52,21 +53,21 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project enumerable with projection
         /// </summary>
-        public static IEnumerable<TDest> ProjectTo<TDest, TEntity>(this IEnumerable<TEntity> source)
+        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source)
             where TDest : class, new() =>
-            ProjectTo<TDest, TEntity>(source, Mapper.Instance);
+            ProjectTo<TDest>(source, Mapper.Instance);
 
         /// <summary>
         /// Project enumerable with projection
         /// </summary>
-        public static IEnumerable<TDest> ProjectTo<TDest, TEntity>(this IEnumerable<TEntity> source, Mapper map)
+        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source, Mapper map)
             where TDest : class, new()
         {
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprMap = expr.CopyParametersAction;
 
             if (exprMap == null)
-                throw new ArgumentException($"{typeof(TEntity).Name} has no mapping to {typeof(TDest).Name}");
+                throw new ArgumentException($"{source.GetType().Name} has no mapping to {typeof(TDest).Name}");
 
             return source.Cast<object>().Select(s =>
             {
