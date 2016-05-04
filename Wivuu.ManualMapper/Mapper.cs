@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Wivuu.ManualMapper
 {
@@ -64,14 +62,13 @@ namespace Wivuu.ManualMapper
         public static IEnumerable<TDest> ProjectTo<TDest, TEntity>(this IEnumerable<TEntity> source, Mapper map)
             where TDest : class, new()
         {
-            var expr = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
+            var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprMap = expr.CopyParametersAction;
 
             if (exprMap == null)
                 throw new ArgumentException($"{typeof(TEntity).Name} has no mapping to {typeof(TDest).Name}");
 
-            var xx = source.Cast<object>();
-            return xx.Select(s =>
+            return source.Cast<object>().Select(s =>
             {
                 var d = new TDest();
                 exprMap(s, d);
@@ -82,13 +79,15 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project query with projection
         /// </summary>
-        public static IQueryable<TResult> ProjectTo<TResult>(this IQueryable source) =>
-            ProjectTo<TResult>(source, Mapper.Instance);
+        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source)
+            where TDest : new() =>
+            ProjectTo<TDest>(source, Mapper.Instance);
 
         /// <summary>
         /// Project query with projection
         /// </summary>
         public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source, Mapper map)
+            where TDest : new()
         {
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprMap = expr?.CopyParametersExpr;
