@@ -118,6 +118,5 @@ namespace Wivuu.ManualMapper
     {
         public Action<object, TDest> CopyParametersAction;
         public Expression CopyParametersExpr;
-        public Expression CopyParametersExpr2;
     }
 }
