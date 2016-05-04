@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wivuu.ManualMapper", "Wivuu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wivuu.ManualMapper.Tests", "Wivuu.ManualMapper.Tests\Wivuu.ManualMapper.Tests.csproj", "{F37A1382-25BB-464C-9FEA-9886D1ED0EDF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".documents", ".documents", "{E972B245-C27F-4064-BC84-DE83E39A2F75}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
