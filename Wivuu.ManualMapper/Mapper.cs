@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Wivuu.ManualMapper
 {
@@ -53,18 +54,21 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project enumerable with projection
         /// </summary>
-        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source)
+        public static IEnumerable<TDest> ProjectTo<TDest, TEntity>(this IEnumerable<TEntity> source)
             where TDest : class, new() =>
-            ProjectTo<TDest>(source, Mapper.Instance);
+            ProjectTo<TDest, TEntity>(source, Mapper.Instance);
 
         /// <summary>
         /// Project enumerable with projection
         /// </summary>
-        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source, Mapper map)
+        public static IEnumerable<TDest> ProjectTo<TDest, TEntity>(this IEnumerable<TEntity> source, Mapper map)
             where TDest : class, new()
         {
-            var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
+            var expr = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprMap = expr.CopyParametersAction;
+
+            if (exprMap == null)
+                throw new ArgumentException($"{typeof(TEntity).Name} has no mapping to {typeof(TDest).Name}");
 
             var xx = source.Cast<object>();
             return xx.Select(s =>
@@ -78,18 +82,26 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project query with projection
         /// </summary>
-        public static IQueryable<TDest> ProjectTo<TDest, TEntity>(this IQueryable<TEntity> source) =>
-            ProjectTo<TDest, TEntity>(source, Mapper.Instance);
+        public static IQueryable<TResult> ProjectTo<TResult>(this IQueryable source) =>
+            ProjectTo<TResult>(source, Mapper.Instance);
 
         /// <summary>
         /// Project query with projection
         /// </summary>
-        public static IQueryable<TDest> ProjectTo<TDest, TEntity>(this IQueryable<TEntity> source, Mapper map)
+        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source, Mapper map)
         {
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
-            var exprMap = expr.CopyParametersExpr as Expression<Func<TEntity, TDest>>;
+            var exprMap = expr?.CopyParametersExpr;
 
-            return source.Select(exprMap);
+            if (exprMap == null)
+                throw new ArgumentException($"{source.ElementType.Name} has no mapping to {typeof(TDest).Name}");
+
+            return source.Provider.CreateQuery<TDest>(
+                Expression.Call(
+                typeof(Queryable), nameof(Queryable.Select),
+                new[] { source.ElementType, typeof(TDest) },
+                source.Expression, exprMap
+            ));
         }
     }
 }

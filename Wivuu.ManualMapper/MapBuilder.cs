@@ -49,7 +49,8 @@ namespace Wivuu.ManualMapper
         /// </summary>
         public void Compile()
         {
-            Expr.CopyParametersExpr   = BuildExpr();
+            Expr.CopyParametersExpr  = BuildExpr();
+            Expr.CopyParametersExpr2 = BuildExpr2();
             Expr.CopyParametersAction = BuildAction();
         }
 
@@ -65,6 +66,28 @@ namespace Wivuu.ManualMapper
                     param: new[] { src },
                     body: scope.MemberInit(
                         newExpr:  Expression.New(typeof(TDest)),
+                        bindings: from map in Mappings
+                                  select Expression.Bind(
+                                      map.Item2.Member,
+                                      visitor.Visit(map.Item1.Body)
+                                  )
+                    )
+                );
+            }
+        }
+
+        private Expression<Func<object, TDest>> BuildExpr2()
+        {
+            using (var scope = new Scope())
+            {
+                var src     = scope.Param<object>("src");
+                var visitor = new MemberReplaceVisitor(Expression.TypeAs(src, typeof(TSource)));
+
+                // Build member expression
+                return Lambda<Func<object, TDest>>(
+                    param: new[] { src },
+                    body: scope.MemberInit(
+                        newExpr: Expression.New(typeof(TDest)),
                         bindings: from map in Mappings
                                   select Expression.Bind(
                                       map.Item2.Member,
@@ -118,5 +141,6 @@ namespace Wivuu.ManualMapper
     {
         public Action<object, TDest> CopyParametersAction;
         public Expression CopyParametersExpr;
+        public Expression CopyParametersExpr2;
     }
 }

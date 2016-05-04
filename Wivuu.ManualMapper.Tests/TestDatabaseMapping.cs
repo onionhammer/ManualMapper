@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Data.Entity;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wivuu.ManualMapper.Tests.Base;
@@ -36,9 +36,9 @@ namespace Wivuu.ManualMapper.Tests
             await Db.SaveChangesAsync();
 
             // Retrieve dest
-            var dest = Db.MySources
+            var dest = await Db.MySources
                 .ProjectTo<TestDestType>(mapper)
-                .ToList();
+                .ToListAsync();
 
             Assert.AreEqual(source.Count, dest.Count);
             Enumerable
