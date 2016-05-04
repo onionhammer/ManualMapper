@@ -8,6 +8,9 @@ namespace Wivuu.ManualMapper
 {
     public sealed class Mapper
     {
+        /// <summary>
+        /// Static instance of mapper
+        /// </summary>
         public static readonly Mapper Instance = new Mapper();
 
         internal readonly Dictionary<Type, MapExpression> Mappings

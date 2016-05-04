@@ -69,8 +69,8 @@ namespace Wivuu.ManualMapper.Tests
                 from i in Enumerable.Range(0, 100)
                 select new TestSourceType
                 {
-                    Date = DateTime.Today.AddMinutes(i),
-                    Name = $"Item {i}",
+                    Date  = DateTime.Today.AddMinutes(i),
+                    Name  = $"Item {i}",
                     Value = i
                 }
             ).ToList();
