@@ -39,7 +39,8 @@ namespace Wivuu.ManualMapper
             Expression<Func<TSource, TProp>> source)
         {
             // Add expression
-            Mappings.Add(Tuple.Create<LambdaExpression, MemberExpression>(source, dest.Body as MemberExpression));
+            Mappings.Add(Tuple.Create<LambdaExpression, MemberExpression>(
+                source, dest.Body as MemberExpression));
 
             return this;
         }
@@ -95,12 +96,10 @@ namespace Wivuu.ManualMapper
                 // Add each mapping to the lambda
                 body.AddRange(
                     Mappings.Select(map =>
-                    {
-                        var srcExpr  = visitor.Visit(map.Item1.Body);
-                        var destExpr = map.Item2.Update(dest);
-
-                        return Expression.Assign(destExpr, srcExpr);
-                    })
+                        Expression.Assign(
+                            map.Item2.Update(dest), 
+                            visitor.Visit(map.Item1.Body))
+                    )
                 );
 
                 // Build member expression
