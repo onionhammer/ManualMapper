@@ -98,16 +98,22 @@ namespace Wivuu.ManualMapper.Tests
         {
             var mapper = new Mapper();
 
+            mapper.CreateMap<IEnumerable<TestSourceType>, TestContainerType>()
+                .ForMember(
+                    d => d.Dests, 
+                    sources => Enumerable.ToList(
+                        from s in sources
+                        select mapper.Map<TestDestType>(s))
+                )
+                .Compile();
+
+            var other_source = new TestSourceType { Value = 5 };
             mapper.CreateMap<TestSourceType, TestDestType>()
                 .ForMember(d => d.MyName, s => s.Name)
-                .ForMember(d => d.MyValue, s => s.Value)
+                .ForMember(d => d.MyValue, s => s.Value + other_source.Value)
                 // Date -> MyDate intentionally not mapped
                 .Compile();
 
-            mapper.CreateMap<IEnumerable<TestSourceType>, TestContainerType>()
-                .ForMember(d => d.Dests, sources => sources.Select(s => mapper.Map<TestDestType>(s)).ToList())
-                .Compile();
-                
             var source =
                 from i in Enumerable.Range(0, 100)
                 select new TestSourceType
@@ -118,6 +124,18 @@ namespace Wivuu.ManualMapper.Tests
                 };
 
             var dest = mapper.Map<TestContainerType>(source);
+
+            Assert.AreEqual(source.Count(), dest.Dests.Count);
+            Enumerable
+                .Zip(source, dest.Dests, (x, y) => Tuple.Create(x, y))
+                .All(t =>
+                {
+                    Assert.AreEqual(t.Item1.Name, t.Item2.MyName);
+                    Assert.AreEqual(t.Item1.Value + other_source.Value, t.Item2.MyValue);
+                    Assert.AreNotEqual(t.Item1.Date, t.Item2.MyDate);
+
+                    return true;
+                });
         }
     }
 }

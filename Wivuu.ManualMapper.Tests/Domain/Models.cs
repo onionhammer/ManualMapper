@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace Wivuu.ManualMapper.Tests.Domain
 {
+    [DebuggerDisplay("{Value} - {Name} - {Date}")]
     public class TestSourceType
     {
         [Key]
@@ -12,6 +14,7 @@ namespace Wivuu.ManualMapper.Tests.Domain
         public DateTime Date { get; set; }
     }
 
+    [DebuggerDisplay("{MyValue} - {MyName}")]
     public class TestDestType
     {
         public string MyName { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -11,8 +12,11 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Static instance of mapper
         /// </summary>
-        public static readonly Mapper Instance = new Mapper();
+        public static Mapper Instance { get; } = new Mapper();
 
+        /// <summary>
+        /// Mappings stored in the mapper
+        /// </summary>
         internal readonly Dictionary<Type, MapExpression> Mappings
             = new Dictionary<Type, MapExpression>();
 
@@ -33,6 +37,8 @@ namespace Wivuu.ManualMapper
         public TDest Map<TDest>(object source)
             where TDest : class, new()
         {
+            Contract.Assert(source != null);
+
             var dest = new TDest();
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
             expr.CopyParametersAction(source, dest);
@@ -45,6 +51,9 @@ namespace Wivuu.ManualMapper
         public TDest Map<TDest>(object source, TDest dest)
             where TDest : class, new()
         {
+            Contract.Assert(source != null);
+            Contract.Assert(dest != null);
+
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
             expr.CopyParametersAction(source, dest);
             return dest;
@@ -57,8 +66,12 @@ namespace Wivuu.ManualMapper
         /// Project enumerable with projection
         /// </summary>
         public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source)
-            where TDest : class, new() =>
-            ProjectTo<TDest>(source, Mapper.Instance);
+            where TDest : class, new()
+        {
+            Contract.Assert(source != null);
+
+            return ProjectTo<TDest>(source, Mapper.Instance);
+        }
 
         /// <summary>
         /// Project enumerable with projection
@@ -66,6 +79,9 @@ namespace Wivuu.ManualMapper
         public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source, Mapper map)
             where TDest : class, new()
         {
+            Contract.Assert(source != null);
+            Contract.Assert(map != null);
+
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprMap = expr.CopyParametersAction;
 
@@ -84,8 +100,12 @@ namespace Wivuu.ManualMapper
         /// Project query with projection
         /// </summary>
         public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source)
-            where TDest : new() =>
-            ProjectTo<TDest>(source, Mapper.Instance);
+            where TDest : new()
+        {
+            Contract.Assert(source != null);
+
+            return ProjectTo<TDest>(source, Mapper.Instance);
+        }
 
         /// <summary>
         /// Project query with projection
@@ -93,6 +113,9 @@ namespace Wivuu.ManualMapper
         public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source, Mapper map)
             where TDest : new()
         {
+            Contract.Assert(source != null);
+            Contract.Assert(map != null);
+
             var expr    = map.Mappings[typeof(TDest)] as MapExpression<TDest>;
             var exprMap = expr?.CopyParametersExpr;
 

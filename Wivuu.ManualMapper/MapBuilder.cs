@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using static Wivuu.ManualMapper.Expr;
 
 namespace Wivuu.ManualMapper
 {
+    /// <summary>
+    /// Replace instances of source object within source lambda body
+    /// </summary>
     internal class MemberReplaceVisitor : ExpressionVisitor
     {
         private bool Once = false;
@@ -28,6 +32,9 @@ namespace Wivuu.ManualMapper
         }
     }
 
+    /// <summary>
+    /// Build to create mappings
+    /// </summary>
     public sealed class MapBuilder<TSource, TDest>
     {
         private readonly MapExpression<TDest> Expr;
@@ -37,6 +44,8 @@ namespace Wivuu.ManualMapper
 
         internal MapBuilder(MapExpression<TDest> expr)
         {
+            Contract.Assert(expr != null);
+
             this.Expr = expr;
         }
 
@@ -47,6 +56,10 @@ namespace Wivuu.ManualMapper
             Expression<Func<TDest, TProp>> dest,
             Expression<Func<TSource, TProp>> source)
         {
+            Contract.Assert(dest != null);
+            Contract.Assert(source != null);
+            Contract.Assert(source.ReturnType == source.ReturnType);
+
             // Add expression
             Mappings.Add(Tuple.Create<LambdaExpression, MemberExpression>(
                 source, dest.Body as MemberExpression));

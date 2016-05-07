@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wivuu.ManualMapper.Tests.Base;
