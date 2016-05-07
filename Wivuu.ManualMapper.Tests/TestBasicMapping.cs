@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wivuu.ManualMapper.Tests.Domain;
@@ -6,10 +7,10 @@ using Wivuu.ManualMapper.Tests.Domain;
 namespace Wivuu.ManualMapper.Tests
 {
     [TestClass]
-    public class TestMapping
+    public class TestBasicMapping
     {
         [TestMethod]
-        public void TestBasicMapping()
+        public void TestPocoMapping()
         {
             var x = 5;
 
@@ -90,6 +91,33 @@ namespace Wivuu.ManualMapper.Tests
 
                     return true;
                 });
+        }
+
+        [TestMethod]
+        public void TestComplexMapping()
+        {
+            var mapper = new Mapper();
+
+            mapper.CreateMap<TestSourceType, TestDestType>()
+                .ForMember(d => d.MyName, s => s.Name)
+                .ForMember(d => d.MyValue, s => s.Value)
+                // Date -> MyDate intentionally not mapped
+                .Compile();
+
+            mapper.CreateMap<IEnumerable<TestSourceType>, TestContainerType>()
+                .ForMember(d => d.Dests, sources => sources.Select(s => mapper.Map<TestDestType>(s)).ToList())
+                .Compile();
+                
+            var source =
+                from i in Enumerable.Range(0, 100)
+                select new TestSourceType
+                {
+                    Date  = DateTime.Today.AddMinutes(i),
+                    Name  = $"Item {i}",
+                    Value = i
+                };
+
+            var dest = mapper.Map<TestContainerType>(source);
         }
     }
 }

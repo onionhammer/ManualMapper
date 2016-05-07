@@ -69,7 +69,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="TestDatabaseMapping.cs" />
-    <Compile Include="TestMapping.cs" />
+    <Compile Include="TestBasicMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,7 @@ namespace Wivuu.ManualMapper
 {
     internal class MemberReplaceVisitor : ExpressionVisitor
     {
+        private bool Once = false;
         private readonly Expression With;
 
         public MemberReplaceVisitor(Expression with)
@@ -16,7 +17,15 @@ namespace Wivuu.ManualMapper
         }
 
         protected override Expression VisitParameter(ParameterExpression node)
-            => With;
+        {
+            if (!Once && node.Type == With.Type)
+            {
+                Once = true;
+                return With;
+            }
+
+            return node;
+        }
     }
 
     public sealed class MapBuilder<TSource, TDest>
@@ -58,8 +67,7 @@ namespace Wivuu.ManualMapper
         {
             using (var scope = new Scope())
             {
-                var src     = scope.Param<TSource>("src");
-                var visitor = new MemberReplaceVisitor(src);
+                var src = scope.Param<TSource>("src");
 
                 // Build member expression
                 return Lambda<Func<TSource, TDest>>(
@@ -69,7 +77,7 @@ namespace Wivuu.ManualMapper
                         bindings: from map in Mappings
                                   select Expression.Bind(
                                       map.Item2.Member,
-                                      visitor.Visit(map.Item1.Body)
+                                      new MemberReplaceVisitor(src).Visit(map.Item1.Body)
                                   )
                     )
                 );
@@ -83,9 +91,7 @@ namespace Wivuu.ManualMapper
                 var srcObj  = scope.Param<object>("srcObj");
                 var dest    = scope.Param<TDest>("dest");
                 var src     = scope.Var<TSource>("src");
-                var visitor = new MemberReplaceVisitor(src);
-
-                var body = new List<Expression>(capacity: 1 + Mappings.Count)
+                var body    = new List<Expression>(capacity: 1 + Mappings.Count)
                 {
                     Expression.Assign(
                         src, 
@@ -97,8 +103,8 @@ namespace Wivuu.ManualMapper
                 body.AddRange(
                     Mappings.Select(map =>
                         Expression.Assign(
-                            map.Item2.Update(dest), 
-                            visitor.Visit(map.Item1.Body))
+                            map.Item2.Update(dest),
+                            new MemberReplaceVisitor(src).Visit(map.Item1.Body))
                     )
                 );
 
