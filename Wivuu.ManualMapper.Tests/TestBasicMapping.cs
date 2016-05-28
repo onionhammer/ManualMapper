@@ -9,6 +9,9 @@ namespace Wivuu.ManualMapper.Tests
     [TestClass]
     public class TestBasicMapping
     {
+        /// <summary>
+        /// Tests plain-old-class-object mapping
+        /// </summary>
         [TestMethod]
         public void TestPocoMapping()
         {
@@ -56,8 +59,11 @@ namespace Wivuu.ManualMapper.Tests
             Assert.AreEqual(timeChosen, destExisting.MyDate);
         }
 
+        /// <summary>
+        /// Tests mapping with projections with enumerables
+        /// </summary>
         [TestMethod]
-        public void TestEnumerableMapping()
+        public void TestEnumerableProjection()
         {
             var mapper = new Mapper();
             mapper.CreateMap<TestSourceType, TestDestType>()
@@ -93,8 +99,11 @@ namespace Wivuu.ManualMapper.Tests
                 });
         }
 
+        /// <summary>
+        /// Tests mapping ienumerable to non-enumerable with sub-mapping
+        /// </summary>
         [TestMethod]
-        public void TestComplexMapping()
+        public void TestSubMapping()
         {
             var mapper = new Mapper();
 
@@ -136,6 +145,39 @@ namespace Wivuu.ManualMapper.Tests
 
                     return true;
                 });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void TestConstructUsing()
+        {
+            var mapper = new Mapper();
+            var start = DateTime.UtcNow;
+            mapper.CreateMap<TestSourceType, TestDestType>()
+                .ConstructUsing(() => new TestDestType
+                {
+                    MyDate = start
+                })
+                .ForMember(d => d.MyName, s => s.Name)
+                .ForMember(d => d.MyValue, s => s.Value)
+                .Compile();
+
+            var source = new TestSourceType
+            {
+                Date  = DateTime.MinValue,
+                Name  = "Name 1",
+                Value = 1
+            };
+
+            var dest = mapper.Map<TestDestType>(source);
+
+            Assert.IsNotNull(dest);
+            Assert.AreNotEqual(source.Date, dest.MyDate);
+            Assert.AreEqual(start, dest.MyDate);
+            Assert.AreEqual(source.Name, dest.MyName);
+            Assert.AreEqual(source.Value, dest.MyValue);
         }
     }
 }

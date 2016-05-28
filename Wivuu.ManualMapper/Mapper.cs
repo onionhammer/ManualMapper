@@ -39,8 +39,8 @@ namespace Wivuu.ManualMapper
         {
             Contract.Assert(source != null);
 
-            var dest = new TDest();
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
+            var dest = expr.CtorFunc();
             expr.CopyParametersAction(source, dest);
             return dest;
         }

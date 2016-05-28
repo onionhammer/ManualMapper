@@ -39,6 +39,8 @@ namespace Wivuu.ManualMapper
     {
         private readonly MapExpression<TDest> Expr;
 
+        private Expression<Func<TDest>> Ctor;
+
         private readonly List<Tuple<LambdaExpression, MemberExpression>> Mappings 
             = new List<Tuple<LambdaExpression, MemberExpression>>();
 
@@ -68,12 +70,39 @@ namespace Wivuu.ManualMapper
         }
 
         /// <summary>
+        /// Generate a new instance of the destination entity with the
+        /// input constructor
+        /// </summary>
+        public MapBuilder<TSource, TDest> ConstructUsing(
+            Expression<Func<TDest>> ctor)
+        {
+            Contract.Assert(ctor != null);
+            Contract.Assert(Ctor == null);
+
+            this.Ctor = ctor;
+            return this;
+        }
+
+        /// <summary>
         /// Compile mapping expressions
         /// </summary>
         public void Compile()
         {
+            Expr.CtorFunc             = BuildCtor();
             Expr.CopyParametersExpr   = BuildExpr();
             Expr.CopyParametersAction = BuildAction();
+        }
+
+        private Func<TDest> BuildCtor()
+        {
+            Expression<Func<TDest>> result;
+
+            if (Ctor != null)
+                result = Ctor;
+            else
+                result = Lambda<Func<TDest>>(Expression.New(typeof(TDest)));
+
+            return result.Compile();
         }
 
         private Expression<Func<TSource, TDest>> BuildExpr()
@@ -134,6 +163,8 @@ namespace Wivuu.ManualMapper
 
     internal sealed class MapExpression<TDest> : MapExpression
     {
+        public Func<TDest> CtorFunc;
+
         public Action<object, TDest> CopyParametersAction;
         public Expression CopyParametersExpr;
     }

@@ -9,6 +9,9 @@ namespace Wivuu.ManualMapper
     {
         public static Scope Scope() => new Scope();
 
+        public static Expression<T> Lambda<T>( Expression body)
+            => Expression.Lambda<T>(body);
+
         public static Expression<T> Lambda<T>(
             ParameterExpression[] param, Expression body)
             => Expression.Lambda<T>(body, param);
