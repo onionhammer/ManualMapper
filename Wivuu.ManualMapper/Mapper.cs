@@ -40,6 +40,9 @@ namespace Wivuu.ManualMapper
             Contract.Assert(source != null);
 
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
+            if (expr == null)
+                throw new DestinationNotMapped(dest: typeof(TDest).Name);
+
             var dest = expr.CtorFunc();
             expr.CopyParametersAction(source, dest);
             return dest;
@@ -55,6 +58,9 @@ namespace Wivuu.ManualMapper
             Contract.Assert(dest != null);
 
             var expr = Mappings[typeof(TDest)] as MapExpression<TDest>;
+            if (expr == null)
+                throw new DestinationNotMapped(dest: typeof(TDest).Name);
+
             expr.CopyParametersAction(source, dest);
             return dest;
         }

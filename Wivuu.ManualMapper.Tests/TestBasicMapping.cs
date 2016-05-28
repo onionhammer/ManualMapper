@@ -148,7 +148,7 @@ namespace Wivuu.ManualMapper.Tests
         }
 
         /// <summary>
-        /// 
+        /// Test construct using syntax
         /// </summary>
         [TestMethod]
         public void TestConstructUsing()
@@ -178,6 +178,39 @@ namespace Wivuu.ManualMapper.Tests
             Assert.AreEqual(start, dest.MyDate);
             Assert.AreEqual(source.Name, dest.MyName);
             Assert.AreEqual(source.Value, dest.MyValue);
+        }
+
+        [TestMethod]
+        public void TestExceptionForNoDestination()
+        {
+            var mapper = new Mapper();
+
+            try
+            {
+                mapper.Map<TestDestType>(new TestSourceType
+                {
+                    Name = "Craig"
+                });
+                Assert.Fail($"Should have crashed with {nameof(DestinationNotMapped)}");
+            }
+            catch
+            {
+                // Pass
+            }
+
+            mapper.CreateMap<TestSourceType, TestDestType>()
+                .ForMember(d => d.MyName, s => s.Name)
+                .ForMember(d => d.MyValue, s => s.Value)
+                // Date -> MyDate intentionally not mapped
+                .Compile();
+
+            var dest = mapper.Map<TestDestType>(new TestSourceType
+            {
+                Name = "Craig"
+            });
+
+            Assert.IsNotNull(dest);
+            Assert.AreEqual("Craig", dest.MyName);
         }
     }
 }

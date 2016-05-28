@@ -37,6 +37,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Expr.cs" />
     <Compile Include="MapBuilder.cs" />
     <Compile Include="Mapper.cs" />
