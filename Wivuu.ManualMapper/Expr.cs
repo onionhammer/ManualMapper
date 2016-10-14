@@ -9,7 +9,7 @@ namespace Wivuu.ManualMapper
     {
         public static Scope Scope() => new Scope();
 
-        public static Expression<T> Lambda<T>( Expression body)
+        public static Expression<T> Lambda<T>(Expression body)
             => Expression.Lambda<T>(body);
 
         public static Expression<T> Lambda<T>(
@@ -40,9 +40,16 @@ namespace Wivuu.ManualMapper
         public static MethodCallExpression Invoke(this MethodInfo cb, params Expression[] arguments)
             => Expression.Call(cb, arguments);
 
-        public static Expression New<T>(Expression<T> value) => value.Body;
-        public static Expression New(Expression<Action> value) => value.Body;
-        public static Expression New<T>(Expression<Action<T>> value) => value.Body;
-        public static Expression New<T, K>(Expression<Func<T, K>> value) => value.Body;
+        public static Expression New<T>(Expression<T> value) 
+            => value.Body;
+
+        public static Expression New(Expression<Action> value) 
+            => value.Body;
+
+        public static Expression New<T>(Expression<Action<T>> value) 
+            => value.Body;
+
+        public static Expression New<T, K>(Expression<Func<T, K>> value) 
+            => value.Body;
     }
 }

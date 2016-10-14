@@ -10,11 +10,6 @@ namespace Wivuu.ManualMapper
     public sealed class Mapper
     {
         /// <summary>
-        /// Static instance of mapper
-        /// </summary>
-        public static Mapper Instance { get; } = new Mapper();
-
-        /// <summary>
         /// Mappings stored in the mapper
         /// </summary>
         internal readonly Dictionary<Type, MapExpression> Mappings
@@ -71,17 +66,6 @@ namespace Wivuu.ManualMapper
         /// <summary>
         /// Project enumerable with projection
         /// </summary>
-        public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source)
-            where TDest : class, new()
-        {
-            Contract.Assert(source != null);
-
-            return ProjectTo<TDest>(source, Mapper.Instance);
-        }
-
-        /// <summary>
-        /// Project enumerable with projection
-        /// </summary>
         public static IEnumerable<TDest> ProjectTo<TDest>(this IEnumerable source, Mapper map)
             where TDest : class, new()
         {
@@ -100,17 +84,6 @@ namespace Wivuu.ManualMapper
                 exprMap(s, d);
                 return d;
             });
-        }
-
-        /// <summary>
-        /// Project query with projection
-        /// </summary>
-        public static IQueryable<TDest> ProjectTo<TDest>(this IQueryable source)
-            where TDest : new()
-        {
-            Contract.Assert(source != null);
-
-            return ProjectTo<TDest>(source, Mapper.Instance);
         }
 
         /// <summary>

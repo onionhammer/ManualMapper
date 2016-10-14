@@ -41,8 +41,8 @@ namespace Wivuu.ManualMapper
 
         private Expression<Func<TDest>> Ctor;
 
-        private readonly List<Tuple<LambdaExpression, MemberExpression>> Mappings 
-            = new List<Tuple<LambdaExpression, MemberExpression>>();
+        private readonly List<StructTuple<LambdaExpression, MemberExpression>> Mappings 
+            = new List<StructTuple<LambdaExpression, MemberExpression>>();
 
         internal MapBuilder(MapExpression<TDest> expr)
         {
@@ -63,7 +63,7 @@ namespace Wivuu.ManualMapper
             Contract.Assert(source.ReturnType == source.ReturnType);
 
             // Add expression
-            Mappings.Add(Tuple.Create<LambdaExpression, MemberExpression>(
+            Mappings.Add(StructTuple.Create<LambdaExpression, MemberExpression>(
                 source, dest.Body as MemberExpression));
 
             return this;

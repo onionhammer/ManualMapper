@@ -48,9 +48,7 @@ namespace Wivuu.ManualMapper
             this.OnVisit = visit;
         }
 
-        public override Expression Visit(Expression node)
-        {
-            return OnVisit(base.Visit(node));
-        }
+        public override Expression Visit(Expression node) =>
+            OnVisit(base.Visit(node));
     }
 }
