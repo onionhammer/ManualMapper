@@ -10,7 +10,7 @@ namespace Wivuu.ManualMapper.Tests
     public class TestBasicMapping
     {
         /// <summary>
-        /// Tests plain-old-class-object mapping
+        /// Tests plain-old-class-object flat mapping
         /// </summary>
         [TestMethod]
         public void TestPocoMapping()
@@ -18,20 +18,20 @@ namespace Wivuu.ManualMapper.Tests
             var x = 5;
 
             var mapper = new Mapper();
-            mapper.CreateMap<TestSourceType, TestDestType>()
+            mapper.CreateMap<SourceType1, DestType1>()
                 .ForMember(d => d.MyName, s => s.Name + x.ToString())
                 .ForMember(d => d.MyValue, s => s.Value)
                 // Date -> MyDate intentionally not mapped
                 .Compile();
 
-            var source = new TestSourceType
+            var source = new SourceType1
             {
                 Name  = "My Test Name",
                 Value = 100,
                 Date  = DateTime.Now
             };
 
-            var destNew = mapper.Map<TestDestType>(source);
+            var destNew = mapper.Map<DestType1>(source);
 
             // Assert that mapping worked
             Assert.IsNotNull(destNew);
@@ -41,7 +41,7 @@ namespace Wivuu.ManualMapper.Tests
             Assert.AreNotEqual(source.Date, destNew.MyDate);
 
             var timeChosen = DateTime.Now.AddMinutes(-5);
-            var destExisting = new TestDestType
+            var destExisting = new DestType1
             {
                 MyName  = "Different Name",
                 MyValue = 1,
@@ -66,7 +66,7 @@ namespace Wivuu.ManualMapper.Tests
         public void TestEnumerableProjection()
         {
             var mapper = new Mapper();
-            mapper.CreateMap<TestSourceType, TestDestType>()
+            mapper.CreateMap<SourceType1, DestType1>()
                 .ForMember(d => d.MyName, s => s.Name)
                 .ForMember(d => d.MyValue, s => s.Value)
                 // Date -> MyDate intentionally not mapped
@@ -74,7 +74,7 @@ namespace Wivuu.ManualMapper.Tests
 
             var source = (
                 from i in Enumerable.Range(0, 100)
-                select new TestSourceType
+                select new SourceType1
                 {
                     Date  = DateTime.Today.AddMinutes(i),
                     Name  = $"Item {i}",
@@ -83,7 +83,7 @@ namespace Wivuu.ManualMapper.Tests
             ).ToList();
 
             var dest = source
-                .ProjectTo<TestDestType>(mapper)
+                .ProjectTo<DestType1>(mapper)
                 .ToList();
 
             Assert.AreEqual(source.Count, dest.Count);
@@ -107,17 +107,17 @@ namespace Wivuu.ManualMapper.Tests
         {
             var mapper = new Mapper();
 
-            mapper.CreateMap<IEnumerable<TestSourceType>, TestContainerType>()
+            mapper.CreateMap<IEnumerable<SourceType1>, DestContainerType1>()
                 .ForMember(
                     d => d.Dests, 
                     sources => Enumerable.ToList(
                         from s in sources
-                        select mapper.Map<TestDestType>(s))
+                        select mapper.Map<DestType1>(s))
                 )
                 .Compile();
 
-            var other_source = new TestSourceType { Value = 5 };
-            mapper.CreateMap<TestSourceType, TestDestType>()
+            var other_source = new SourceType1 { Value = 5 };
+            mapper.CreateMap<SourceType1, DestType1>()
                 .ForMember(d => d.MyName, s => s.Name)
                 .ForMember(d => d.MyValue, s => s.Value + other_source.Value)
                 // Date -> MyDate intentionally not mapped
@@ -125,14 +125,14 @@ namespace Wivuu.ManualMapper.Tests
 
             var source =
                 from i in Enumerable.Range(0, 100)
-                select new TestSourceType
+                select new SourceType1
                 {
                     Date  = DateTime.Today.AddMinutes(i),
                     Name  = $"Item {i}",
                     Value = i
                 };
 
-            var dest = mapper.Map<TestContainerType>(source);
+            var dest = mapper.Map<DestContainerType1>(source);
 
             Assert.AreEqual(source.Count(), dest.Dests.Count);
             Enumerable
@@ -155,23 +155,20 @@ namespace Wivuu.ManualMapper.Tests
         {
             var mapper = new Mapper();
             var start = DateTime.UtcNow;
-            mapper.CreateMap<TestSourceType, TestDestType>()
-                .ConstructUsing(() => new TestDestType
-                {
-                    MyDate = start
-                })
+            mapper.CreateMap<SourceType1, DestType2>()
+                .ConstructUsing(() => DestType2.Create(start))
                 .ForMember(d => d.MyName, s => s.Name)
                 .ForMember(d => d.MyValue, s => s.Value)
                 .Compile();
 
-            var source = new TestSourceType
+            var source = new SourceType1
             {
                 Date  = DateTime.MinValue,
                 Name  = "Name 1",
                 Value = 1
             };
 
-            var dest = mapper.Map<TestDestType>(source);
+            var dest = mapper.Map<DestType2>(source);
 
             Assert.IsNotNull(dest);
             Assert.AreNotEqual(source.Date, dest.MyDate);
@@ -187,7 +184,7 @@ namespace Wivuu.ManualMapper.Tests
 
             try
             {
-                mapper.Map<TestDestType>(new TestSourceType
+                mapper.Map<DestType1>(new SourceType1
                 {
                     Name = "Craig"
                 });
@@ -198,19 +195,50 @@ namespace Wivuu.ManualMapper.Tests
                 // Pass
             }
 
-            mapper.CreateMap<TestSourceType, TestDestType>()
+            mapper.CreateMap<SourceType1, DestType1>()
                 .ForMember(d => d.MyName, s => s.Name)
                 .ForMember(d => d.MyValue, s => s.Value)
                 // Date -> MyDate intentionally not mapped
                 .Compile();
 
-            var dest = mapper.Map<TestDestType>(new TestSourceType
+            var dest = mapper.Map<DestType1>(new SourceType1
             {
                 Name = "Craig"
             });
 
             Assert.IsNotNull(dest);
             Assert.AreEqual("Craig", dest.MyName);
+        }
+
+        [TestMethod]
+        public void TestSubObjectMapping()
+        {
+            var mapper = new Mapper();
+
+            mapper.CreateMap<SourceType3, DestType3>()
+                .ForMember(d => d.MyName, s => s.Name)
+                .ForMember(d => d.MyChild, s => mapper.Map<DestType3_Child>(s.Child))
+                .Compile();
+
+            mapper.CreateMap<SourceType2_Child, DestType3_Child>()
+                .ForMember(d => d.MyAge, s => s.Age)
+                .Compile();
+
+            var source = new SourceType3
+            {
+                Name = "Johnson",
+                Child = new SourceType2_Child
+                {
+                    Age = 42
+                }
+            };
+
+            var dest = mapper.Map<DestType3>(source);
+
+            Assert.IsNotNull(dest);
+            Assert.AreEqual(source.Name, dest.MyName);
+            Assert.IsNotNull(dest.MyChild);
+            Assert.AreEqual(source.Child.Age, dest.MyChild.MyAge);
         }
     }
 }

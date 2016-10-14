@@ -11,11 +11,15 @@ namespace Wivuu.ManualMapper.Tests
     [TestClass]
     public class TestDatabaseMapping : DatabaseTests
     {
+        /// <summary>
+        /// Tests flat property mapping of TestSourceType to TestDestType
+        /// from a Queryable projection.
+        /// </summary>
         [TestMethod]
         public async Task TestQueryableMapping()
         {
             var mapper = new Mapper();
-            mapper.CreateMap<TestSourceType, TestDestType>()
+            mapper.CreateMap<SourceType1, DestType1>()
                 .ForMember(d => d.MyName, s => s.Name)
                 .ForMember(d => d.MyValue, s => s.Value)
                 // Date -> MyDate intentionally not mapped
@@ -23,7 +27,7 @@ namespace Wivuu.ManualMapper.Tests
 
             var source = (
                 from i in Enumerable.Range(0, 100)
-                select new TestSourceType
+                select new SourceType1
                 {
                     Date  = DateTime.Today.AddMinutes(i),
                     Name  = $"Item {i}",
@@ -37,7 +41,7 @@ namespace Wivuu.ManualMapper.Tests
 
             // Retrieve dest
             var dest = await Db.MySources
-                .ProjectTo<TestDestType>(mapper)
+                .ProjectTo<DestType1>(mapper)
                 .ToListAsync();
 
             Assert.AreEqual(source.Count, dest.Count);

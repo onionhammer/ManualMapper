@@ -30,7 +30,7 @@ namespace Wivuu.ManualMapper
         /// Map to a new destination
         /// </summary>
         public TDest Map<TDest>(object source)
-            where TDest : class, new()
+            where TDest : class
         {
             Contract.Assert(source != null);
 

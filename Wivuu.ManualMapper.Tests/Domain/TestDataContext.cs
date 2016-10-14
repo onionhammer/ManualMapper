@@ -8,7 +8,7 @@ namespace Wivuu.ManualMapper.Tests.Domain
         public TestDataContext() { }
         public TestDataContext(DbConnection conn) : base(conn, false) { }
 
-        public DbSet<TestSourceType> MySources { get; set; }
+        public DbSet<SourceType1> MySources { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
